@@ -22,12 +22,15 @@ DESCRIPTION
 
 import glob  # Library for filename pattern-matching
 import sympy as sy
-from sympy import sympify, roots, solve, expand, factor
+from sympy import sympify, roots, solve, expand, factor, Symbol, Eq
 from sympy.abc import r, n
 import sys  # For access to the given argument
 import os  # Gives access to current location of co_rr_solver
+import math
 
 # Global variables:
+from sympy.parsing.sympy_parser import parse_expr
+
 next_symbolic_var_index = 0  # This variable indicates the next index for the p_x variable names needed for Theorem 6.
 print_debug_information = False  # This variable indicates whether debug information should be printed (this is read in using the command line argument list)
 
@@ -202,8 +205,50 @@ def fix_syntax(lines):
 
 def solve_homogeneous_equation(init_conditions, associated):
     # You have to implement this yourself!
+
+    degree = len(init_conditions)
+
+    func = "(x**" + str(degree) + ")"
+
+    power = degree - 1
+    for key, value in associated.items():
+        func += plus_adder(parse_expr(value))
+
+        if power > 1:
+            func += "*x**" + str(power)
+        elif power == 1:
+            func += "*x"
+
+        power -= 1
+
+    rts = roots(parse_expr(func))
+
+    print(func)
+    print(rts)
+
+    if degree == 2:
+        if len(rts) == 1:
+            a1 = solve_2nd('a1', 0, init_conditions[0])
+            print(a1)
+
+            a2 = solve_2nd('a2', 1, init_conditions[1], str(a1))
+            print(a2)
+
     return result
 
+
+def plus_adder(val):
+    if val > 0:
+        return "+" + str(val)
+    else:
+        return str(val)
+
+
+def solve_2nd(symbol, n, result, a1='a1'):
+    s = Symbol(symbol)
+
+    func = '(' + a1 + ' + a2 * ' + str(n) + ') * 2**' + str(n) + ' - ' + str(result)
+    return solve(parse_expr(func), s)[0]
 
 """Finds a closed formula for a nonhomogeneous equation, where the nonhomogeneous part consists
     of a linear combination of constants, "r*n^x" with r a real number and x a positive natural number,
