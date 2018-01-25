@@ -1,133 +1,113 @@
-from sympy import roots, solve, Symbol, Number
+from sympy import roots, solve, Symbol
 
 from sympy.parsing.sympy_parser import parse_expr
 
-template_sol1 = "alpha * r**n"
-template_sol2 = "(alpha1 + alpha2 * n) + r**n"
+template_sol1 = 'a * r**n'
+template_sol2 = '(a + b * n) * r**n'
+
+alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+            'v', 'w', 'x', 'y', 'z']
 
 
+# Transform the given homogeneous recurrence relation to a closed formula.
 def solve_eq(init_conditions, associated):
-    # You have to implement this yourself!
-
     degree = len(init_conditions)
 
-    func = "(x**" + str(degree) + ")"
+    eq = character_eq(degree, associated)
+
+    rts = roots(parse_expr(eq))
+
+    if degree == 2 and len(rts) == 1:
+        alphas = find_alphas(rts, init_conditions, template_sol2)
+        return build_solution(template_sol2, rts, alphas)
+
+    else:
+        alphas = find_alphas(rts, init_conditions, template_sol1)
+        return build_solution(template_sol1, rts, alphas)
+
+
+# Build a characteristic equation using a given degree and recurrence parts
+def character_eq(degree, associated):
+    func = '(x**' + str(degree) + ')'
 
     power = degree - 1
-    for key, value in associated.items():
-        func += plus_adder(parse_expr(value))
+    for key, value in sorted(associated.items()):
+        func += flip_sign(parse_expr(value))
 
         if power > 1:
-            func += "*x**" + str(power)
+            func += '*x**' + str(power)
         elif power == 1:
-            func += "*x"
+            func += '*x'
 
         power -= 1
 
-    rts = roots(parse_expr(func))
-
-    print("Function: " + func)
-    print(rts)
-
-    if degree == 1:
-        print("Function of degree 1")
-
-        lel = ""
-    elif degree == 2:
-        print("Function of degree 2")
-
-        if len(rts) == 1:
-            rts_list = list(rts.values())
-
-            a1 = solve_1st('a1', 0, init_conditions[0])
-            print(a1)
-
-            a2 = solve_1st('a2', 1, init_conditions[1], str(a1))
-            print(a2)
-
-            values = {"alpha1": a1, "alpha2": a2, "r": rts_list[0]}
-            sol = fill_general_sol2(values)
-
-            print("Solution: " + sol)
-            return sol
-
-        else:
-            rts_dict = {}
-            i = 1
-            for key, value in rts.items():
-                rts_dict["r" + str(i)] = key
-                i += 1
-
-            func = fill_roots(rts_dict)
-
-            alphas = {}
-            for n, result in init_conditions.items():
-                func = fill_n(func, n, result, alphas)
-
-                solving = solve(parse_expr(func))[0]
-
-                if isinstance(solving, Number):
-                    alphas["sol"] = solving
-                else:
-                    alphas.update(solving)
-
-                lel2 = ""
-
-    return ""
+    return func
 
 
-def fill_n(func, n, sol, alphas):
-    for k, v in alphas.items():
-        func = func.replace(str(k), str(v))
+# Find the values of the alpha's which are in the standard form of the function.
+def find_alphas(rts, init_conditions, template):
+    func = fill_in_roots(template, rts)
+    func += ' - result'
 
-    return func.replace("n", str(n)) + " - " + str(sol)
-
-
-def fill_roots(rts):
-    sol = ""
+    alphas = {}
 
     i = 1
-    while i <= len(rts):
-        r = rts[("r" + str(i))]
-        sol += template_sol1.replace("alpha", ("alpha" + str(i))).replace("r", str(r)) + " + "
+    for n, result in init_conditions.items():
+        func_temp = fill_in_n(func, n, result)
+        func_temp = fill_in_alphas(func_temp, alphas)
+
+        char = get_char(i)
+        solving = solve(parse_expr(func_temp), Symbol(char))[0]
+
+        alphas[char] = solving
 
         i += 1
 
-    return sol[:-3]
+    return alphas
 
 
-def fill_general_sol1(values, nr_of_alphas):
-    sol = ""
+# Fill the value of n and the belonging result in a given function.
+def fill_in_n(func, n, result):
+    return func.replace('n', str(n)).replace('result', str(result))
 
-    i = 0
-    while i != nr_of_alphas:
-        a = values[("alpha" + str(i))]
-        r = values[("r" + str(i))]
-        sol += template_sol1.replace("alpha", a).replace("r", r) + " + "
+
+def fill_in_alphas(func, alphas):
+    for k, v in alphas.items():
+        func = func.replace(str(k), bracketize(v))
+
+    return func
+
+
+def fill_in_roots(template, rts):
+    func = ''
+
+    i = 1
+    for key, value in sorted(rts.items()):
+        r = bracketize(key)
+        func += template.replace('a', get_char(i)).replace('r', r) + ' + '
 
         i += 1
 
-    return sol[:-3]
+    return func[:-3]
 
 
-def fill_general_sol2(values):
-    sol = template_sol2
-    sol = sol.replace("alpha1", str(values["alpha1"]))
-    sol = sol.replace("alpha2", str(values["alpha2"]))
-    sol = sol.replace("r", str(values["r"]))
+def build_solution(template, rts, alphas):
+    func = fill_in_roots(template, rts)
+    func = fill_in_alphas(func, alphas)
 
-    return sol
+    return func
 
 
-def plus_adder(val):
+def flip_sign(val):
     if val > 0:
-        return "+" + str(val)
+        return '-' + str(val)
     else:
-        return str(val)
+        return '+' + str(abs(val))
 
 
-def solve_1st(symbol, n, result, a1='a1'):
-    s = Symbol(symbol)
+def get_char(i):
+    return alphabet[(i - 1)]
 
-    func = '(' + a1 + ' + a2 * ' + str(n) + ') * 2**' + str(n) + ' - ' + str(result)
-    return solve(parse_expr(func), s)[0]
+
+def bracketize(val):
+    return '(' + str(val) + ')'
