@@ -2,8 +2,8 @@ from sympy import roots, solve, Symbol
 
 from sympy.parsing.sympy_parser import parse_expr
 
-template_sol1 = 'a * r**n'
-template_sol2 = '(a + b * n) * r**n'
+template_sol1 = '(a) * (r)**n'
+template_sol2 = '((a) + (b) * n) * (r)**n'
 
 alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
             'v', 'w', 'x', 'y', 'z']
@@ -31,13 +31,16 @@ def character_eq(degree, associated):
     func = '(x**' + str(degree) + ')'
 
     power = degree - 1
-    for key, value in sorted(associated.items()):
-        func += flip_sign(parse_expr(value))
+    for x in range(1, degree + 1):
 
-        if power > 1:
-            func += '*x**' + str(power)
-        elif power == 1:
-            func += '*x'
+        if x in associated:
+            val = associated[x]
+            func += flip_sign(parse_expr(val))
+
+            if power > 1:
+                func += '*x**' + str(power)
+            elif power == 1:
+                func += '*x'
 
         power -= 1
 
@@ -66,24 +69,27 @@ def find_alphas(rts, init_conditions, template):
     return alphas
 
 
-# Fill the value of n and the belonging result in a given function.
+# Fill the value of n and the belonging result in a given equation.
 def fill_in_n(func, n, result):
     return func.replace('n', str(n)).replace('result', str(result))
 
 
+# Fill the values of the known alpha's in a given equation.
 def fill_in_alphas(func, alphas):
     for k, v in alphas.items():
-        func = func.replace(str(k), bracketize(v))
+        func = func.replace(str(k), str(v))
 
     return func
 
 
+# Fill the values of the known roots in a given template.
+# When there are multiple roots the template gets automatically expanded.
 def fill_in_roots(template, rts):
     func = ''
 
     i = 1
     for key, value in sorted(rts.items()):
-        r = bracketize(key)
+        r = str(key)
         func += template.replace('a', get_char(i)).replace('r', r) + ' + '
 
         i += 1
@@ -91,6 +97,7 @@ def fill_in_roots(template, rts):
     return func[:-3]
 
 
+# Build the final closed formula using the roots and alpha's
 def build_solution(template, rts, alphas):
     func = fill_in_roots(template, rts)
     func = fill_in_alphas(func, alphas)
@@ -98,6 +105,7 @@ def build_solution(template, rts, alphas):
     return func
 
 
+# Turn a positive value in to a negative one and vice versa.
 def flip_sign(val):
     if val > 0:
         return '-' + str(val)
@@ -105,9 +113,6 @@ def flip_sign(val):
         return '+' + str(abs(val))
 
 
+# Get the character of the alphabet belonging to the given index.
 def get_char(i):
     return alphabet[(i - 1)]
-
-
-def bracketize(val):
-    return '(' + str(val) + ')'
