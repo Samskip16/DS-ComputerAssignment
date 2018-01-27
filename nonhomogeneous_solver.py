@@ -10,7 +10,7 @@ alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'
 
 
 # Transform the given homogeneous recurrence relation to a closed formula.
-def solve_eq(init_conditions, associated):
+def solve_eq(init_conditions, associated, f_n_list):
     degree = len(init_conditions)
 
     eq = character_eq(degree, associated)
@@ -27,8 +27,6 @@ def solve_eq(init_conditions, associated):
     else:
         alphas = find_alphas(rts, init_conditions, template_sol1)
         return build_solution(template_sol1, rts, alphas)
-
-    return ""
 
 
 # Build a characteristic equation using a given degree and recurrence parts
@@ -78,22 +76,22 @@ def create_g(s, t, bs, rts):
         elif t == 1:
             func += 'x*n + '
         else:
-            func += 'x + '
+            func += 'x'
 
         t -= 1
 
-    func = func[:-3] + ') * ' + bracketize(s) + '**n'
+    func += ') * ' + bracketize(s) + '**n'
     return func
 
 
 def build_rec_rel(partc, associated):
     rr = ''
 
-    for k, v in associated.items():
+    for k, v in associated:
         gg = parse_expr(v)
 
-        rr += str(gg) + ' ' + partc
-        partc = partc.replace('**n', '**n-' + k)
+        rr += gg + ' ' + partc
+        nw = nw.replace('n', 'n-' + k)
 
     return rr
 
