@@ -31,7 +31,7 @@ import math
 # Global variables:
 from sympy.parsing.sympy_parser import parse_expr
 
-import homogeneous_solver
+import homogeneous_solver, non_homogeneous_solver
 
 next_symbolic_var_index = 0  # This variable indicates the next index for the p_x variable names needed for Theorem 6.
 print_debug_information = False  # This variable indicates whether debug information should be printed (this is read in using the command line argument list)
@@ -160,6 +160,9 @@ def analyze_recurrence_equation(equation):
         associated[step_length] = c_n  # Add the recursive step length and factor to the dictionary
         pos_s = equation.find("s(n-")  # First position of recurrent part (because other "s(n-"-part is already removed)
     # Sorry, but you will have to implement the treatment of F(n) yourself!
+
+    # TODO when more than one '+' create a loop.
+    f_n_list.append(equation)
     return associated, f_n_list
 
 
@@ -221,7 +224,7 @@ def solve_homogeneous_equation(init_conditions, associated):
 
 def solve_nonhomogeneous_equation(init_conditions, associated, f_n_list):
     # You have to implement this yourself!
-    return result
+    return non_homogeneous_solver.solve_eq(init_conditions, associated, f_n_list)
 
 
 """Transforms the string equation, that is of the right side of the form "s(n) = ...",
