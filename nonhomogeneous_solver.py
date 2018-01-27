@@ -76,22 +76,22 @@ def create_g(s, t, bs, rts):
         elif t == 1:
             func += 'x*n + '
         else:
-            func += 'x'
+            func += 'x + '
 
         t -= 1
 
-    func += ') * ' + bracketize(s) + '**n'
+    func = func[:-3] + ') * ' + bracketize(s) + '**n'
     return func
 
 
 def build_rec_rel(partc, associated):
     rr = ''
 
-    for k, v in associated:
+    for k, v in associated.items():
         gg = parse_expr(v)
 
-        rr += gg + ' ' + partc
-        nw = nw.replace('n', 'n-' + k)
+        rr += str(gg) + ' ' + partc
+        partc = partc.replace('**n', '**n-' + k)
 
     return rr
 

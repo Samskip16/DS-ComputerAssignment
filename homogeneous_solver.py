@@ -1,4 +1,4 @@
-from sympy import roots, solve, Symbol, simplify
+from sympy import roots, solve, Symbol
 
 from sympy.parsing.sympy_parser import parse_expr
 
@@ -17,9 +17,6 @@ def solve_eq(init_conditions, associated):
 
     rts = roots(parse_expr(eq))
 
-    particular_sol = step5(rts)
-    lel = build_rec_rel(particular_sol, associated)
-
     if degree == 2 and len(rts) == 1:
         alphas = find_alphas(rts, init_conditions, template_sol2)
         return build_solution(template_sol2, rts, alphas)
@@ -27,8 +24,6 @@ def solve_eq(init_conditions, associated):
     else:
         alphas = find_alphas(rts, init_conditions, template_sol1)
         return build_solution(template_sol1, rts, alphas)
-
-    return ""
 
 
 # Build a characteristic equation using a given degree and recurrence parts
@@ -50,52 +45,6 @@ def character_eq(degree, associated):
         power -= 1
 
     return func
-
-
-def step5(rts):
-    bs = {}
-
-    s = int(input("S:"))
-    t = int(input("T:"))
-
-    nr_of_bs = input('Nr of B: ')
-    for i in range(int(nr_of_bs)):
-        bs[i] = input('B' + str(i) + ': ')
-
-    return create_g(s, t, bs, rts)
-
-
-def create_g(s, t, bs, rts):
-    func = ''
-    if s in rts:
-        func += 'n**' + rts[s]
-
-    func += '('
-
-    for i in range(len(bs)):
-        if t > 1:
-            func += 'x*' + bracketize('n**' + str(t)) + ' + '
-        elif t == 1:
-            func += 'x*n + '
-        else:
-            func += 'x + '
-
-        t -= 1
-
-    func = func[:-3] + ') * ' + bracketize(s) + '**n'
-    return func
-
-
-def build_rec_rel(partc, associated):
-    rr = ''
-
-    for k, v in associated.items():
-        gg = parse_expr(v)
-
-        rr += str(gg) + ' ' + partc
-        partc = partc.replace('**n', '**n-' + k)
-
-    return rr
 
 
 # Find the values of the alpha's which are in the standard form of the function.
