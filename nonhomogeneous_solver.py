@@ -2,55 +2,32 @@ from sympy import roots, solve, Symbol, simplify
 
 from sympy.parsing.sympy_parser import parse_expr
 
+import util
+
 template_sol1 = '(a) * (r)**n'
 template_sol2 = '((a) + (b) * n) * (r)**n'
-
-alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-            'v', 'w', 'x', 'y', 'z']
 
 
 # Transform the given homogeneous recurrence relation to a closed formula.
 def solve_eq(init_conditions, associated, f_n_list):
     degree = len(init_conditions)
 
-    eq = character_eq(degree, associated)
+    eq = util.characteristic_eq(degree, associated)
 
     rts = roots(parse_expr(eq))
 
-    particular_sol = step5(rts)
-    lel = build_rec_rel(particular_sol, associated)
+    particular = find_part_sol(rts, associated)
 
     if degree == 2 and len(rts) == 1:
-        alphas = find_alphas(rts, init_conditions, template_sol2)
-        return build_solution(template_sol2, rts, alphas)
+        alphas = util.find_alphas(rts, init_conditions, template_sol2, particular)
+        return build_solution(template_sol2, rts, alphas, particular)
 
     else:
-        alphas = find_alphas(rts, init_conditions, template_sol1)
-        return build_solution(template_sol1, rts, alphas)
+        alphas = util.find_alphas(rts, init_conditions, template_sol1, particular)
+        return build_solution(template_sol1, rts, alphas, particular)
 
 
-# Build a characteristic equation using a given degree and recurrence parts
-def character_eq(degree, associated):
-    func = '(x**' + str(degree) + ')'
-
-    power = degree - 1
-    for x in range(1, degree + 1):
-
-        if x in associated:
-            val = associated[x]
-            func += flip_sign(parse_expr(val))
-
-            if power > 1:
-                func += '*x**' + str(power)
-            elif power == 1:
-                func += '*x'
-
-        power -= 1
-
-    return func
-
-
-def step5(rts):
+def find_part_sol(rts, associated):
     bs = {}
 
     s = int(input("S:"))
@@ -60,10 +37,14 @@ def step5(rts):
     for i in range(int(nr_of_bs)):
         bs[i] = input('B' + str(i) + ': ')
 
-    return create_g(s, t, bs, rts)
+    form = build_particular_form(s, t, bs, rts)
+    filled = fill_particular(form, associated)
+
+    solving = solve(parse_expr(filled), Symbol(get_char(1)))[0]
+    return form.replace(get_char(1), bracketize(solving))
 
 
-def create_g(s, t, bs, rts):
+def build_particular_form(s, t, bs, rts):
     func = ''
     if s in rts:
         func += 'n**' + rts[s]
@@ -72,100 +53,46 @@ def create_g(s, t, bs, rts):
 
     for i in range(len(bs)):
         if t > 1:
-            func += 'x*' + bracketize('n**' + str(t)) + ' + '
+            func += get_char(i + 1) + '*' + bracketize('n**' + str(t)) + ' + '
         elif t == 1:
-            func += 'x*n + '
+            func += get_char(i + 1) + '*n + '
         else:
-            func += 'x + '
+            func += get_char(i + 1) + ' + '
 
         t -= 1
 
-    func = func[:-3] + ') * ' + bracketize(s) + '**n'
+    func = func[:-3] + ')'
+    func += ' * ' + bracketize(s) + '**n'
+
     return func
 
 
-def build_rec_rel(partc, associated):
-    rr = ''
+def fill_particular(form, associated):
+    filled = ''
 
     for k, v in associated.items():
-        gg = parse_expr(v)
+        m = parse_expr(v)
 
-        rr += str(gg) + ' ' + partc
-        partc = partc.replace('**n', '**n-' + k)
+        adjusted_form = form.replace('**n', '**n-' + str(k))
+        filled += str(m) + ' * ' + bracketize(adjusted_form) + ' '
 
-    return rr
-
-
-# Find the values of the alpha's which are in the standard form of the function.
-def find_alphas(rts, init_conditions, template):
-    func = fill_in_roots(template, rts)
-    func += ' - result'
-
-    alphas = {}
-
-    i = 1
-    for n, result in init_conditions.items():
-        func_temp = fill_in_n(func, n, result)
-        func_temp = fill_in_alphas(func_temp, alphas)
-
-        char = get_char(i)
-        solving = solve(parse_expr(func_temp), Symbol(char))[0]
-
-        alphas[char] = solving
-
-        i += 1
-
-    return alphas
-
-
-# Fill the value of n and the belonging result in a given equation.
-def fill_in_n(func, n, result):
-    return func.replace('n', str(n)).replace('result', str(result))
-
-
-# Fill the values of the known alpha's in a given equation.
-def fill_in_alphas(func, alphas):
-    for k, v in alphas.items():
-        func = func.replace(str(k), bracketize(v))
-
-    return func
-
-
-# Fill the values of the known roots in a given template.
-# When there are multiple roots the template gets automatically expanded.
-def fill_in_roots(template, rts):
-    func = ''
-
-    i = 1
-    for key, value in sorted(rts.items()):
-        r = str(key)
-        func += template.replace('a', get_char(i)).replace('r', r) + ' + '
-
-        i += 1
-
-    return func[:-3]
+    filled += '-' + bracketize(form)
+    return filled
 
 
 # Build the final closed formula using the roots and alpha's
-def build_solution(template, rts, alphas):
-    func = fill_in_roots(template, rts)
-    func = fill_in_alphas(func, alphas)
+def build_solution(template, rts, alphas, particular):
+    func = util.fill_in_roots(template, rts)
+    func = util.fill_in_alphas(func, alphas)
+    func += particular
 
     return func
-
-
-# Turn a positive value in to a negative one and vice versa.
-def flip_sign(val):
-    if val > 0:
-        return '-' + str(val)
-    else:
-        return '+' + str(abs(val))
 
 
 # Get the character of the alphabet belonging to the given index.
 def get_char(i):
-    return alphabet[(i - 1)]
+    return util.get_char(i)
 
 
 def bracketize(val):
-    return "(" + str(val) + ")"
+    return util.bracketize(val)
