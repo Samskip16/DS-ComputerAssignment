@@ -4,9 +4,6 @@ from sympy.parsing.sympy_parser import parse_expr
 
 import util
 
-template_sol1 = '(a) * (r)**n'
-template_sol2 = '((a) + (b) * n) * (r)**n'
-
 
 # Transform the given homogeneous recurrence relation to a closed formula.
 def solve_eq(init_conditions, associated, f_n_list):
@@ -18,13 +15,12 @@ def solve_eq(init_conditions, associated, f_n_list):
 
     particular = find_part_sol(rts, associated)
 
-    if degree == 2 and len(rts) == 1:
-        alphas = util.find_alphas(rts, init_conditions, template_sol2, particular)
-        return build_solution(template_sol2, rts, alphas, particular)
-
+    if len(rts) == 1:
+        alphas = util.find_alphas_sol2(rts, init_conditions)
+        return build_solution2(rts, alphas, particular)
     else:
-        alphas = util.find_alphas(rts, init_conditions, template_sol1, particular)
-        return build_solution(template_sol1, rts, alphas, particular)
+        alphas = util.find_alphas_sol1(rts, init_conditions)
+        return build_solution1(rts, alphas, particular)
 
 
 def find_part_sol(rts, associated):
@@ -81,12 +77,12 @@ def fill_particular(form, associated):
 
 
 # Build the final closed formula using the roots and alpha's
-def build_solution(template, rts, alphas, particular):
-    func = util.fill_in_roots(template, rts)
-    func = util.fill_in_alphas(func, alphas)
-    func += particular
+def build_solution1(rts, alphas, particular):
+    return util.build_solution1(rts, alphas) + particular
 
-    return func
+
+def build_solution2(rts, alphas, particular):
+    return util.build_solution2(rts, alphas) + particular
 
 
 # Get the character of the alphabet belonging to the given index.

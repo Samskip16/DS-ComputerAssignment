@@ -2,6 +2,9 @@ from sympy import solve, Symbol
 
 from sympy.parsing.sympy_parser import parse_expr
 
+template_sol1 = '(a) * (r)**n'
+template_sol2 = '() * (r)**n'
+
 alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
             'v', 'w', 'x', 'y', 'z']
 
@@ -27,9 +30,18 @@ def characteristic_eq(degree, associated):
     return func
 
 
+def find_alphas_sol1(rts, init_conditions, particular=None):
+    func = fill_in_roots_sol1(rts)
+    return find_alphas(func, init_conditions, particular)
+
+
+def find_alphas_sol2(rts, init_conditions, particular=None):
+    func = fill_in_roots_sol2(rts)
+    return find_alphas(func, init_conditions, particular)
+
+
 # Find the values of the alpha's which are in the standard form of the function.
-def find_alphas(rts, init_conditions, template, particular=None):
-    func = fill_in_roots(template, rts)
+def find_alphas(func, init_conditions, particular):
     func += ' - result'
 
     if particular:
@@ -68,17 +80,48 @@ def fill_in_alphas(func, alphas):
 
 # Fill the values of the known roots in a given template.
 # When there are multiple roots the template gets automatically expanded.
-def fill_in_roots(template, rts):
+def fill_in_roots_sol1(rts):
     func = ''
 
     i = 1
     for key, value in sorted(rts.items()):
         r = str(key)
-        func += template.replace('a', get_char(i)).replace('r', r) + ' + '
+        func += template_sol1.replace('a', get_char(i)).replace('r', r) + ' + '
 
         i += 1
 
     return func[:-3]
+
+
+def fill_in_roots_sol2(rts):
+    func = ''
+
+    rt = list(rts.items())[0]
+    for i in range(1, rt[1] + 1):
+        if i >= 2:
+            func += get_char(i) + ' * (n**' + str(i - 1) + ') + '
+        else:
+            func += get_char(i) + ' + '
+
+    func = bracketize(func[:-3])
+    func = template_sol2.replace('()', func).replace('r', str(rt[0]))
+
+    return func
+
+
+# Build the final closed formula using the roots and alpha's
+def build_solution1(rts, alphas):
+    func = fill_in_roots_sol1(rts)
+    func = fill_in_alphas(func, alphas)
+
+    return func
+
+
+def build_solution2(rts, alphas):
+    func = fill_in_roots_sol2(rts)
+    func = fill_in_alphas(func, alphas)
+
+    return func
 
 
 # Turn a positive value in to a negative one and vice versa.

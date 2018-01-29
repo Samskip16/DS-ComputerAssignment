@@ -305,7 +305,7 @@ else:
         output_filename = filename.replace(".txt", "-dir.txt")
         resulting_equ = ""
         # Check if the equation is a homogeneous relation
-        if not f_n_list:  # The list is empty
+        if f_n_list[0] == '':  # The list is empty
             resulting_equ = solve_homogeneous_equation(init_conditions, associated)
         else:
             resulting_equ = solve_nonhomogeneous_equation(init_conditions, associated, f_n_list)
