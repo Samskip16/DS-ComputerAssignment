@@ -116,10 +116,10 @@ def search_right_term_end(equation, start, symbols):
     while index < len(equation):
         if equation[index] == "(":
             bracket_count += 1
-        elif equation[index] == ")":
-            bracket_count -= 1
         elif bracket_count == 0 and equation[index] in symbols and index > 0:
             return index - 1
+        elif equation[index] == ")":
+            bracket_count -= 1
         index += 1
     return len(equation) - 1  # If we got until here the term ends at the end of equation
 
@@ -160,10 +160,16 @@ def analyze_recurrence_equation(equation):
         equation = equation.replace(c_n, "", 1)  # Remove the actual c_n from the equation (only once)
         associated[step_length] = c_n  # Add the recursive step length and factor to the dictionary
         pos_s = equation.find("s(n-")  # First position of recurrent part (because other "s(n-"-part is already removed)
-    # Sorry, but you will have to implement the treatment of F(n) yourself!
 
-    # TODO when more than one '+' create a loop.
-    f_n_list.append(equation)
+    # Splitting fn()
+    eq_split = equation.split("+")
+
+    for fn in eq_split:
+        if fn.find("n") == -1:
+            eq_split.remove(fn)
+
+    f_n_list = eq_split
+
     return associated, f_n_list
 
 
@@ -249,8 +255,8 @@ def reformat_equation(equation):
     equation = equation.replace("**", "^")
     pos_sqrt = equation.find("sqrt(")
     while pos_sqrt >= 0:
-        pos_end = search_right_term_end(equation, pos_sqrt, ["+", "-", "*", "/"])
-        equation = "{0}^(1/2){1}".format(equation[0:pos_end + 1], equation[pos_end + 1:])
+        pos_end = search_right_term_end(equation, pos_sqrt + 5, [')'])
+        equation = "{0}^(1/2){1}".format(equation[0:pos_end + 2], equation[pos_end + 2:])
         equation = equation.replace("sqrt", "", 1)
         pos_sqrt = equation.find("sqrt(")
     return equation
@@ -305,10 +311,14 @@ else:
         output_filename = filename.replace(".txt", "-dir.txt")
         resulting_equ = ""
         # Check if the equation is a homogeneous relation
-        if f_n_list[0] == '':  # The list is empty
+        if not f_n_list:  # The list is empty
             resulting_equ = solve_homogeneous_equation(init_conditions, associated)
         else:
-            resulting_equ = solve_nonhomogeneous_equation(init_conditions, associated, f_n_list)
+            if f_n_list[0] == '':  # The list is empty
+                resulting_equ = solve_homogeneous_equation(init_conditions, associated)
+            else:
+                resulting_equ = solve_nonhomogeneous_equation(init_conditions, associated, f_n_list)
+
         resulting_equ = reformat_equation(resulting_equ)
         write_output_to_file(output_filename, resulting_equ)
 
