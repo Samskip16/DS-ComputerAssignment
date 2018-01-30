@@ -14,8 +14,8 @@ def solve_eq(init_conditions, associated):
     rts = roots(parse_expr(eq))
 
     if len(rts) == 1:
-        alphas = util.find_alphas_sol2(rts, init_conditions)
+        alphas = util.find_alphas_sol2(rts, init_conditions, len(associated))
         return util.build_solution2(rts, alphas)
     else:
-        alphas = util.find_alphas_sol1(rts, init_conditions)
+        alphas = util.find_alphas_sol1(rts, init_conditions, len(associated))
         return util.build_solution1(rts, alphas)

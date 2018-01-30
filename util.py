@@ -1,6 +1,7 @@
 from sympy import solve, Symbol
 
 from sympy.parsing.sympy_parser import parse_expr
+from itertools import islice
 
 template_sol1 = '(a) * (r)**n'
 template_sol2 = '() * (r)**n'
@@ -30,18 +31,18 @@ def characteristic_eq(degree, associated):
     return func
 
 
-def find_alphas_sol1(rts, init_conditions, particular=None):
+def find_alphas_sol1(rts, init_conditions, nr_of_assoc, particular=None):
     func = fill_in_roots_sol1(rts)
-    return find_alphas(func, init_conditions, particular)
+    return find_alphas(func, init_conditions, nr_of_assoc, particular)
 
 
-def find_alphas_sol2(rts, init_conditions, particular=None):
+def find_alphas_sol2(rts, init_conditions, nr_of_assoc, particular=None):
     func = fill_in_roots_sol2(rts)
-    return find_alphas(func, init_conditions, particular)
+    return find_alphas(func, init_conditions, nr_of_assoc, particular)
 
 
 # Find the values of the alpha's which are in the standard form of the function.
-def find_alphas(func, init_conditions, particular):
+def find_alphas(func, init_conditions, nr_of_assoc, particular):
     func += ' - result'
 
     if particular:
@@ -50,15 +51,15 @@ def find_alphas(func, init_conditions, particular):
     alphas = {}
 
     i = 1
-    for n, result in init_conditions.items():
+    for n, result in take(nr_of_assoc, init_conditions.items()):
         func_temp = fill_in_n(func, n, result)
-        func_temp = fill_in_alphas(func_temp, alphas)
+        func_temp = fill_in_values(func_temp, alphas)
 
         char = get_char(i)
         p = parse_expr(func_temp)
-        solving = solve(parse_expr(func_temp), Symbol(char))[0]
+        solving = solve(parse_expr(func_temp), Symbol(char), dict=True)[0]
 
-        alphas[char] = solving
+        alphas.update(solving)
 
         i += 1
 
@@ -70,9 +71,9 @@ def fill_in_n(func, n, result):
     return func.replace('n', str(n)).replace('result', str(result))
 
 
-# Fill the values of the known alpha's in a given equation.
-def fill_in_alphas(func, alphas):
-    for k, v in alphas.items():
+# Fill values of the dictionary in a given equation.
+def fill_in_values(func, values):
+    for k, v in values.items():
         func = func.replace(str(k), bracketize(v))
 
     return func
@@ -112,14 +113,14 @@ def fill_in_roots_sol2(rts):
 # Build the final closed formula using the roots and alpha's
 def build_solution1(rts, alphas):
     func = fill_in_roots_sol1(rts)
-    func = fill_in_alphas(func, alphas)
+    func = fill_in_values(func, alphas)
 
     return func
 
 
 def build_solution2(rts, alphas):
     func = fill_in_roots_sol2(rts)
-    func = fill_in_alphas(func, alphas)
+    func = fill_in_values(func, alphas)
 
     return func
 
@@ -139,3 +140,7 @@ def get_char(i):
 
 def bracketize(val):
     return "(" + str(val) + ")"
+
+
+def take(n, iterable):
+    return list(islice(iterable, n))
