@@ -319,7 +319,6 @@ else:
             else:
                 resulting_equ = solve_nonhomogeneous_equation(init_conditions, associated, f_n_list)
 
-
         resulting_equ = reformat_equation(resulting_equ)
         write_output_to_file(output_filename, resulting_equ)
 
