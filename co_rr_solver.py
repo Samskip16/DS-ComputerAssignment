@@ -161,6 +161,7 @@ def analyze_recurrence_equation(equation):
         associated[step_length] = c_n  # Add the recursive step length and factor to the dictionary
         pos_s = equation.find("s(n-")  # First position of recurrent part (because other "s(n-"-part is already removed)
 
+    # Splitting fn()
     eq_split = equation.split("+")
 
     for fn in eq_split:
@@ -310,10 +311,15 @@ else:
         output_filename = filename.replace(".txt", "-dir.txt")
         resulting_equ = ""
         # Check if the equation is a homogeneous relation
-        if f_n_list[0] == '':  # The list is empty
+        if not f_n_list:  # The list is empty
             resulting_equ = solve_homogeneous_equation(init_conditions, associated)
         else:
-            resulting_equ = solve_nonhomogeneous_equation(init_conditions, associated, f_n_list)
+            if f_n_list[0] == '':  # The list is empty
+                resulting_equ = solve_homogeneous_equation(init_conditions, associated)
+            else:
+                resulting_equ = solve_nonhomogeneous_equation(init_conditions, associated, f_n_list)
+
+
         resulting_equ = reformat_equation(resulting_equ)
         write_output_to_file(output_filename, resulting_equ)
 
