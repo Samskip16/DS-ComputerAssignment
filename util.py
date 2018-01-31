@@ -87,7 +87,20 @@ def fill_in_roots_sol1(rts):
     i = 1
     for key, value in sorted(rts.items()):
         r = str(key)
-        func += template_sol1.replace('a', get_char(i)).replace('r', r) + ' + '
+        temp_template = ''
+
+        if value > 1:
+            for y in range(0, value+1):
+                if y == 0:
+                    temp_template += get_char(i)
+                if y == 1:
+                    temp_template += ' + ' + get_char(i+1) + '*n'
+                if 1 < y < value:
+                    temp_template += ' + ' + get_char(i+y)+'*n**' + str(y)
+                if y == value:
+                    func += template_sol1.replace('a', temp_template).replace('r', r) + ' + '
+        else:
+            func += template_sol1.replace('a', get_char(i)).replace('r', r) + ' + '
 
         i += 1
 
