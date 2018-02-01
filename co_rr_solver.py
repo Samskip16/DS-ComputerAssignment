@@ -31,7 +31,7 @@ import math
 # Global variables:
 from sympy.parsing.sympy_parser import parse_expr
 
-import homogeneous_solver, non_homogeneous_solver
+import homogeneous_solver
 import nonhomogeneous_solver
 
 next_symbolic_var_index = 0  # This variable indicates the next index for the p_x variable names needed for Theorem 6.

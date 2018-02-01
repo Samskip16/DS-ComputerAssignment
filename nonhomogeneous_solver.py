@@ -65,12 +65,15 @@ def build_particular_form(s, t, rts):
 def fill_particular(form, associated, f_n):
     filled = ''
 
+    i = 0
+
     for k, v in associated.items():
         m = str(parse_expr(v))
 
-        if m[:1] != '-':
+        if m[:1] != '-' and i != 0:
             m = '+' + m
 
+        i += 1
         adjusted_form = form.replace('**n', '**(n-' + str(k) + ')')
         filled += m + ' * ' + adjusted_form + ' '
 
@@ -82,9 +85,6 @@ def fill_particular(form, associated, f_n):
 
 def find_s(f_n):
     i = j = f_n.find('**n')
-
-    print('i:', f_n[i])
-    print('j-1:', f_n[j - 1])
 
     if i == -1:
         return 1
