@@ -66,10 +66,13 @@ def fill_particular(form, associated, f_n):
     filled = ''
 
     for k, v in associated.items():
-        m = parse_expr(v)
+        m = str(parse_expr(v))
+
+        if m[:1] != '-':
+            m = '+' + m
 
         adjusted_form = form.replace('**n', '**(n-' + str(k) + ')')
-        filled += str(m) + ' * ' + adjusted_form + ' '
+        filled += m + ' * ' + adjusted_form + ' '
 
     filled += ' + ' + f_n
     filled += ' - ' + bracketize(form)
@@ -94,14 +97,6 @@ def find_s(f_n):
             j -= 1
 
         i -= 1
-        # j -= 1
-
-    print(int(f_n[j:i]))
-    # if j == i:
-    #     i = 0
-    #     while f_n[j - 2].isdigit():
-    #         j -= 1
-    # print(int(f_n[j:i]))
 
     return int(f_n[j:i])
 
