@@ -93,10 +93,15 @@ def fill_in_roots_sol1(rts):
             for y in range(0, value+1):
                 if y == 0:
                     temp_template += get_char(i)
+                    i += 1
                 if y == 1:
-                    temp_template += ' + ' + get_char(i+1) + '*n'
+                    temp_template += ' + ' + get_char(i) + '*n'
+                    if y != value-1:
+                        i += 1
                 if 1 < y < value:
-                    temp_template += ' + ' + get_char(i+y)+'*n**' + str(y)
+                    temp_template += ' + ' + get_char(i)+'*n**' + str(y)
+                    if y != value-1:
+                        i += 1
                 if y == value:
                     func += template_sol1.replace('a', temp_template).replace('r', r) + ' + '
         else:
