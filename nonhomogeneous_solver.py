@@ -42,7 +42,7 @@ def find_part_sol(rts, associated, f_n):
 def build_particular_form(s, t, rts):
     func = ''
     if s in rts:
-        func += 'n**' + rts[s]
+        func += 'n**' + str(rts[s])
 
     func += '('
 
@@ -80,11 +80,28 @@ def fill_particular(form, associated, f_n):
 def find_s(f_n):
     i = j = f_n.find('**n')
 
+    print('i:', f_n[i])
+    print('j-1:', f_n[j - 1])
+
     if i == -1:
         return 1
 
     while f_n[j - 1].isdigit():
         j -= 1
+
+    if f_n[j - 1] == ')':
+        while f_n[j - 1] != '(':
+            j -= 1
+
+        i -= 1
+        # j -= 1
+
+    print(int(f_n[j:i]))
+    # if j == i:
+    #     i = 0
+    #     while f_n[j - 2].isdigit():
+    #         j -= 1
+    # print(int(f_n[j:i]))
 
     return int(f_n[j:i])
 
