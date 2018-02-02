@@ -107,13 +107,14 @@ def find_t(f_n):
     i = f_n.find('n**')
 
     if i == -1:
-        return 0
+        i = f_n.find('n')
+        return 0 if i == -1 else 1
+    else:
+        j = i + 3
+        while j < len(f_n) and f_n[j].isdigit():
+            j += 1
 
-    j = i + 3
-    while j < len(f_n) and f_n[j].isdigit():
-        j += 1
-
-    return int(f_n[i + 3:j])
+        return int(f_n[i + 3:j])
 
 
 # Build the final closed formula using the roots and alpha's
