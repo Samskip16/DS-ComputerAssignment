@@ -31,18 +31,19 @@ def characteristic_eq(degree, associated):
     return func
 
 
-def find_alphas_sol1(rts, init_conditions, nr_of_assoc, particular=None):
+def find_alphas_sol1(rts, init_conditions, nr_of_a, particular=None):
     func = fill_in_roots_sol1(rts)
-    return find_alphas(func, init_conditions, nr_of_assoc, particular)
+    return find_alphas(func, init_conditions, nr_of_a, particular)
 
 
-def find_alphas_sol2(rts, init_conditions, nr_of_assoc, particular=None):
+def find_alphas_sol2(rts, init_conditions, nr_of_a, particular=None):
+
     func = fill_in_roots_sol2(rts)
-    return find_alphas(func, init_conditions, nr_of_assoc, particular)
+    return find_alphas(func, init_conditions, nr_of_a, particular)
 
 
 # Find the values of the alpha's which are in the standard form of the function.
-def find_alphas(func, init_conditions, nr_of_assoc, particular):
+def find_alphas(func, init_conditions, nr_of_a, particular):
     func += ' - result'
 
     if particular:
@@ -51,7 +52,7 @@ def find_alphas(func, init_conditions, nr_of_assoc, particular):
     alphas = {}
 
     i = 1
-    for n, result in take(nr_of_assoc, init_conditions.items()):
+    for n, result in take(nr_of_a, init_conditions.items()):
         func_temp = fill_in_n(func, n, result)
         func_temp = fill_in_values(func_temp, alphas)
 
@@ -79,6 +80,14 @@ def fill_in_values(func, values):
     return func
 
 
+def nr_of_alphas(rts):
+    count = 0
+    for k, v in rts.items():
+        count += v
+
+    return count
+
+
 # Fill the values of the known roots in a given template.
 # When there are multiple roots the template gets automatically expanded.
 def fill_in_roots_sol1(rts):
@@ -90,17 +99,17 @@ def fill_in_roots_sol1(rts):
         temp_template = ''
 
         if value > 1:
-            for y in range(0, value+1):
+            for y in range(0, value + 1):
                 if y == 0:
                     temp_template += get_char(i)
                     i += 1
                 if y == 1:
                     temp_template += ' + ' + get_char(i) + '*n'
-                    if y != value-1:
+                    if y != value - 1:
                         i += 1
                 if 1 < y < value:
-                    temp_template += ' + ' + get_char(i)+'*n**' + str(y)
-                    if y != value-1:
+                    temp_template += ' + ' + get_char(i) + '*n**' + str(y)
+                    if y != value - 1:
                         i += 1
                 if y == value:
                     func += template_sol1.replace('a', temp_template).replace('r', r) + ' + '

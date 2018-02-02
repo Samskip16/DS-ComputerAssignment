@@ -12,10 +12,11 @@ def solve_eq(init_conditions, associated):
     eq = util.characteristic_eq(degree, associated)
 
     rts = roots(parse_expr(eq))
+    nr_of_a = util.nr_of_alphas(rts)
 
     if len(rts) == 1:
-        alphas = util.find_alphas_sol2(rts, init_conditions, len(associated))
+        alphas = util.find_alphas_sol2(rts, init_conditions, nr_of_a)
         return util.build_solution2(rts, alphas)
     else:
-        alphas = util.find_alphas_sol1(rts, init_conditions, len(associated))
+        alphas = util.find_alphas_sol1(rts, init_conditions, nr_of_a)
         return util.build_solution1(rts, alphas)

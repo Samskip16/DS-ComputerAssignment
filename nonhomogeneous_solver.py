@@ -12,14 +12,15 @@ def solve_eq(init_conditions, associated, f_n_list):
     eq = util.characteristic_eq(degree, associated)
 
     rts = roots(parse_expr(eq))
+    nr_of_a = util.nr_of_alphas(rts)
 
     particular = find_part_sol(rts, associated, f_n_list[0])
 
-    if len(rts) == 1:
-        alphas = util.find_alphas_sol2(rts, init_conditions, len(associated), particular)
+    if len(rts) == 1 and list(rts.values())[0] != 1:
+        alphas = util.find_alphas_sol2(rts, init_conditions, nr_of_a, particular)
         return build_solution2(rts, alphas, particular)
     else:
-        alphas = util.find_alphas_sol1(rts, init_conditions, len(associated), particular)
+        alphas = util.find_alphas_sol1(rts, init_conditions, nr_of_a, particular)
         return build_solution1(rts, alphas, particular)
 
 
@@ -34,6 +35,7 @@ def find_part_sol(rts, associated, f_n):
     for i in range(1, t + 2):
         ps.append(Symbol(get_char(i)))
 
+    p = parse_expr(filled)
     solving = solve(parse_expr(filled), ps, dict=True)[0]
 
     return util.fill_in_values(form, solving)
@@ -42,7 +44,7 @@ def find_part_sol(rts, associated, f_n):
 def build_particular_form(s, t, rts):
     func = ''
     if s in rts:
-        func += 'n**' + str(rts[s])
+        func += 'n**' + str(rts[s]) + ' * '
 
     func += '('
 
@@ -74,7 +76,7 @@ def fill_particular(form, associated, f_n):
             m = '+' + m
 
         i += 1
-        adjusted_form = form.replace('**n', '**(n-' + str(k) + ')')
+        adjusted_form = form.replace('n', '(n-' + str(k) + ')')
         filled += m + ' * ' + adjusted_form + ' '
 
     filled += ' + ' + f_n

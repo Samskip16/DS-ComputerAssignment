@@ -161,15 +161,7 @@ def analyze_recurrence_equation(equation):
         associated[step_length] = c_n  # Add the recursive step length and factor to the dictionary
         pos_s = equation.find("s(n-")  # First position of recurrent part (because other "s(n-"-part is already removed)
 
-    # Splitting fn()
-    eq_split = equation.split("+")
-
-    for fn in eq_split:
-        if fn.find("n") == -1:
-            eq_split.remove(fn)
-
-    f_n_list = eq_split
-
+    f_n_list.append(equation)
     return associated, f_n_list
 
 
